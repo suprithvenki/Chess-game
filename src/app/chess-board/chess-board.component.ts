@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ChessBoard } from '../chess-logic/chess-board.js';
-import { Color, FENChar } from '../chess-logic/models.js';
+import { Color, FENChar, pieceImagePaths } from '../chess-logic/models.js';
 
 @Component({
   selector: 'app-chess-board',
@@ -12,6 +12,7 @@ import { Color, FENChar } from '../chess-logic/models.js';
   styleUrl: './chess-board.component.css'
 })
 export class ChessBoardComponent {
+  public pieceImagePaths = pieceImagePaths;
   private chessBoard = new ChessBoard();
   public chessBoardView: (FENChar | null)[][] = this.chessBoard.chessBoardView;
 
