@@ -95,4 +95,24 @@ export class ChessBoard {
         }
         return false;
     }
+
+    // It check if after the move our King is safe 
+    private isPositionSafeAfterMove(piece: Piece, prevX: number, prevY: number, newX: number, newY: number): boolean {
+        const newPiece: Piece | null = this.chessBoard[newX][newY];
+
+        // we cant put piece on a square that already contain piece of the same color
+        if (newPiece && newPiece.color === piece.color) return false;
+
+        // simulate position
+        this.chessBoard[prevX][prevY] = null;
+        this.chessBoard[newX][newY] = piece
+
+        const isPositionSafe: boolean = !this.isInCheck(piece.color);
+
+        // restore position back
+        this.chessBoard[prevX][prevY] = piece;
+        this.chessBoard[newX][newY] = newPiece;
+
+        return isPositionSafe;
+    }
 }
