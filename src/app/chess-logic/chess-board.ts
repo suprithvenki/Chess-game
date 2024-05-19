@@ -1,7 +1,7 @@
 import { Bishop } from "./pieces/bishop.js";
 import { King } from "./pieces/king.js";
 import { Knight } from "./pieces/knight.js";
-import { Color, FENChar } from "./models.js";
+import { Color, Coords, FENChar, SafeSquares } from "./models.js";
 import { Pawn } from "./pieces/pawn.js";
 import { Piece } from "./pieces/piece.js";
 import { Queen } from "./pieces/queen.js";
@@ -100,7 +100,7 @@ export class ChessBoard {
     private isPositionSafeAfterMove(piece: Piece, prevX: number, prevY: number, newX: number, newY: number): boolean {
         const newPiece: Piece | null = this.chessBoard[newX][newY];
 
-        // we cant put piece on a square that already contain piece of the same color
+        // cant put piece on a square that already contain piece of the same color
         if (newPiece && newPiece.color === piece.color) return false;
 
         // simulate position
@@ -114,5 +114,78 @@ export class ChessBoard {
         this.chessBoard[newX][newY] = newPiece;
 
         return isPositionSafe;
+    }
+
+    // Find all possible moves for every piece of current player color
+    private findSafeSquares(): SafeSquares {
+        const safeSquares: SafeSquares = new Map<string, Coords[]>();
+
+        for (let x = 0; x < this.chessBoardSize; x++) {
+            for (let y = 0; y < this.chessBoardSize; y++) {
+                const piece: Piece | null = this.chessBoard[x][y];
+                // cannot move pieces from opposite color
+                if (!piece || piece.color !== this._playerColor) continue;
+
+                const pieceSafeSquares: Coords[] = [];
+
+                for (const { x: dx, y: dy } of piece.directions) {
+                    let newX: number = x + dx;
+                    let newY: number = y + dy;
+
+                    if (!this.areCoordsValid(newX, newY)) continue;
+
+                    let newPiece: Piece | null = this.chessBoard[newX][newY];
+                    // cant put piece on a square that already contain piece of our color
+                    if (newPiece && newPiece.color === piece.color) continue;
+
+                    // need to restrict pawn moves in certain direction
+                    if (piece instanceof Pawn) {
+                        // if there are already a pice cannot move 2 forward
+                        if (dx === 2 || dx === -2) {
+                            if (newPiece) continue;
+                            // TODO check if this is needed
+                            if (this.chessBoard[newX + (dx === 2 ? -1 : 1)][newY]) continue;
+                        }
+
+                        // cant move pawn one square straight if piece is in front 
+                        if ((dx === 1 || dx === -1) && dy === 0 && newPiece) continue;
+
+                        // cant move pawn diagonally if there is no piece or piece has the same color
+                        if((dx === 1 || dy === -1) && (!newPiece || piece.color === newPiece.color)) continue;
+                    }
+
+                    if (piece instanceof Pawn || piece instanceof Knight || piece instanceof King) {
+                        if (this.isPositionSafeAfterMove(piece, x, y, newX, newY)) {
+                            pieceSafeSquares.push({ x: newX, y: newY });
+                        }
+                    } else {
+                        while (this.areCoordsValid(newX, newY)) {
+                            newPiece = this.chessBoard[newX][newY];
+
+                            // If encounter the same color piece stop scanning in this direction
+                            if (newPiece && newPiece.color === piece.color) break;
+
+                            if (this.isPositionSafeAfterMove(piece, x, y, newX, newY)) {
+                                pieceSafeSquares.push({ x: newX, y: newY });
+                            }
+
+                            // If the position is safe after move it should be already added. Now even if find 
+                            // a piece from the opposite color break since cant go any further  
+                            if (newPiece !== null) break;
+
+                            newX += dx;
+                            newY += dy;
+                        }
+                    }
+                }
+
+                // Add possible moves for every piece base on coordinate as key
+                if (pieceSafeSquares.length) {
+                    safeSquares.set(x + ',' + y, pieceSafeSquares);
+                }
+            }
+        }
+
+        return safeSquares;
     }
 }
