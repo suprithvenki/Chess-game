@@ -1,4 +1,4 @@
-import { Color, Coords, FENChar } from "./models.js";
+import { Color, Coords, FENChar } from "../models.js";
 
 export abstract class Piece {
     protected abstract _FENChar: FENChar;

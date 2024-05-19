@@ -1,7 +1,7 @@
 import { Bishop } from "./pieces/bishop.js";
 import { King } from "./pieces/king.js";
 import { Knight } from "./pieces/knight.js";
-import { Color, FENChar } from "./pieces/models.js";
+import { Color, FENChar } from "./models.js";
 import { Pawn } from "./pieces/pawn.js";
 import { Piece } from "./pieces/piece.js";
 import { Queen } from "./pieces/queen.js";

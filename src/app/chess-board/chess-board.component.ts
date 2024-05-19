@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ChessBoard } from '../chess-logic/chess-board.js';
-import { Color, FENChar } from '../chess-logic/pieces/models.js';
+import { Color, FENChar } from '../chess-logic/models.js';
 
 @Component({
   selector: 'app-chess-board',
