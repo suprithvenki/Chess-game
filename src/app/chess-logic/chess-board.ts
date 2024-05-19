@@ -142,11 +142,13 @@ export class ChessBoard {
                     if (!this.areCoordsValid(newX, newY)) continue;
 
                     let newPiece: Piece | null = this.chessBoard[newX][newY];
+
                     // cant put piece on a square that already contain piece of our color
                     if (newPiece && newPiece.color === piece.color) continue;
 
                     // need to restrict pawn moves in certain direction
                     if (piece instanceof Pawn) {
+                        
                         // if there are already a pice cannot move 2 forward
                         if (dx === 2 || dx === -2) {
                             if (newPiece) continue;
@@ -192,7 +194,33 @@ export class ChessBoard {
                 }
             }
         }
-
+        
         return safeSquares;
+    }
+
+    public move(prevX: number, prevY: number, newX: number, newY: number): void {
+        if (!this.areCoordsValid(prevX, prevY) || !this.areCoordsValid(newX, newY)) return;
+
+        // Check for color
+        const piece: Piece | null = this.chessBoard[prevX][prevY];
+        if (!piece || piece.color !== this._playerColor) return;
+
+        // Check if the new coords are safe
+        const pieceSafeSquares: Coords[] | undefined = this._safeSquares.get(prevX + ',' + prevY);
+        if (!pieceSafeSquares || !pieceSafeSquares.find(coords => coords.x === newX && coords.y === newY)) {
+            throw new Error('Square is not safe');
+        }
+
+        // Set hasMoved
+        if ((piece instanceof Pawn || piece instanceof King || piece instanceof Rook) && !piece.hasMoved) {
+            piece.hasMoved = true;
+        }
+
+        // update the board
+        this.chessBoard[prevX][prevY] = null;
+        this.chessBoard[newX][newY] = piece;
+
+        this._playerColor = this._playerColor === Color.White ? Color.Black : Color.White;
+        this._safeSquares = this.findSafeSquares();
     }
 }
