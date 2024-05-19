@@ -8,6 +8,7 @@ import { Queen } from "./pieces/queen.js";
 import { Rook } from "./pieces/rook.js";
 
 export class ChessBoard {
+    private readonly chessBoardSize: number = 8;
     private chessBoard: (Piece | null)[][];
     private _playerColor = Color.White;
 
@@ -48,5 +49,50 @@ export class ChessBoard {
 
     public static isSquareDark(x: number, y: number): boolean {
         return x % 2 === 0 && y % 2 === 0 || x % 2 === 1 && y % 2 === 1;
+    }
+
+    private areCoordsValid(x: number, y: number): boolean {
+        return x < this.chessBoardSize && y < this.chessBoardSize && x >= 0 && y >= 0;
+    }
+
+    // Check if King is in check
+    public isInCheck(playerColor: Color): boolean {
+        for (let x = 0; x < this.chessBoardSize; x++) {
+            for (let y = 0; y < this.chessBoardSize; y++) {
+                const piece: Piece | null = this.chessBoard[x][y];
+
+                if (!piece || piece.color === playerColor) continue;
+
+                // Check every possible attack for this piece 
+                for (const { x: dx, y: dy } of piece.directions) {
+                    let newX: number = x + dx;
+                    let newY: number = y + dy;
+
+                    if (!this.areCoordsValid(newX, newY)) continue;
+
+                    if (piece instanceof Pawn || piece instanceof Knight || piece instanceof King) {
+                        // Pawns can attack only diagonally
+                        if (piece instanceof Pawn && dy === 0) continue;
+
+                        const attackedPiece: Piece | null = this.chessBoard[newX][newY];
+                        if (attackedPiece instanceof King && attackedPiece.color === playerColor) return true;
+
+                    } else {
+                        // For case (Queen, Rook, Bishop)
+                        while (this.areCoordsValid(newX, newY)) {
+                            const attackedPiece: Piece | null = this.chessBoard[newX][newY];
+                            if (attackedPiece instanceof King && attackedPiece.color === playerColor) return true;
+
+                            // break if there are other pieces on attacked row - diagonal
+                            if (attackedPiece !== null) break;
+
+                            newX += dx;
+                            newY += dy;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
