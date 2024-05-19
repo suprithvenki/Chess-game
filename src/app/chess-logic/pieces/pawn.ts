@@ -14,9 +14,10 @@ export class Pawn extends Piece {
     constructor(private pieceColor: Color) {
         super(pieceColor);
         this._FENChar = pieceColor === Color.White ? FENChar.WhitePawn : FENChar.BlackPawn;
+        if (pieceColor === Color.Black) this.setBlackPawnDirections();
     }
 
-    private setBlackPawnDirection(): void {
+    private setBlackPawnDirections(): void {
         this._directions = this._directions.map(({ x, y }) => ({ x: x * -1, y }));
     }
 
@@ -33,7 +34,7 @@ export class Pawn extends Piece {
         ]
 
         if (this.pieceColor === Color.Black) {
-            this.setBlackPawnDirection();
+            this.setBlackPawnDirections();
         }
     }
 }
