@@ -28,10 +28,12 @@ export class ChessBoardComponent {
     return this.chessBoard.playerColor;
   }
 
+  // For css
   public isSquareDark(x: number, y: number): boolean {
     return ChessBoard.isSquareDark(x, y);
   }
 
+  // For css
   public isSquareSelected(x: number, y: number): boolean {
     if (!this.selectedSquare.piece) return false;
     return this.selectedSquare.x === x && this.selectedSquare.y === y;
@@ -41,15 +43,18 @@ export class ChessBoardComponent {
     return this.pieceSafeSquare.some(coords => coords.x === x && coords.y === y);
   }
 
+  // it will select the piece and hold it in component variable 'selectedSquare'
   public selectingPiece(x: number, y: number): void {
     const piece: FENChar | null = this.chessBoardView[x][y];
     if (!piece) return;
     if (this.isWrongPieceSelected(piece)) return;
 
     this.selectedSquare = { piece, x, y };
+    // Store the safe moves for selected piece
     this.pieceSafeSquare = this.safeSquares.get(x + ',' + y) || [];
   }
 
+  // It will call the move method on the chess board and after that will change the chess board view
   private placingPiece(newX: number, newY: number): void {
     if (!this.selectedSquare.piece) return;
     if (!this.isSquareSafeForSelectedPiece(newX, newY)) return;
@@ -59,11 +64,13 @@ export class ChessBoardComponent {
     this.chessBoardView = this.chessBoard.chessBoardView;
   }
 
+  // It will be run called every time when a square is clicked
   public move(x: number, y: number): void {
     this.selectingPiece(x, y);
     this.placingPiece(x, y);
   }
 
+  // Guard for clicking on enemy pieces
   private isWrongPieceSelected(piece: FENChar): boolean {
     const isWhitePieceSelected: boolean = piece === piece.toLocaleUpperCase();
     return isWhitePieceSelected && this.playerColor === Color.Black ||

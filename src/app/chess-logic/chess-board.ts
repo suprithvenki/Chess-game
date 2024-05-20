@@ -220,6 +220,7 @@ export class ChessBoard {
         this.chessBoard[prevX][prevY] = null;
         this.chessBoard[newX][newY] = piece;
 
+        // Change the player and recalculate all safe squares for all pieces
         this._playerColor = this._playerColor === Color.White ? Color.Black : Color.White;
         this._safeSquares = this.findSafeSquares();
     }
