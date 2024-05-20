@@ -1,7 +1,7 @@
 import { Bishop } from "./pieces/bishop.js";
 import { King } from "./pieces/king.js";
 import { Knight } from "./pieces/knight.js";
-import { Color, Coords, FENChar, SafeSquares } from "./models.js";
+import { CheckState, Color, Coords, FENChar, LastMove, SafeSquares } from "./models.js";
 import { Pawn } from "./pieces/pawn.js";
 import { Piece } from "./pieces/piece.js";
 import { Queen } from "./pieces/queen.js";
@@ -12,6 +12,8 @@ export class ChessBoard {
     private chessBoard: (Piece | null)[][];
     private _playerColor = Color.White;
     private _safeSquares: SafeSquares;
+    private _lastMove: LastMove | undefined;
+    private _checkState: CheckState = { isInCheck: false };
 
     constructor() {
         this.chessBoard = [
@@ -54,6 +56,14 @@ export class ChessBoard {
         return this._safeSquares;
     }
 
+    public get lastMove(): LastMove | undefined {
+        return this._lastMove;
+    }
+
+    public get checkState(): CheckState {
+        return this._checkState;
+    }
+
     public static isSquareDark(x: number, y: number): boolean {
         return x % 2 === 0 && y % 2 === 0 || x % 2 === 1 && y % 2 === 1;
     }
@@ -63,7 +73,7 @@ export class ChessBoard {
     }
 
     // Check if King is in check
-    public isInCheck(playerColor: Color): boolean {
+    public isInCheck(playerColor: Color, checkingCurrentPosition: boolean): boolean {
         for (let x = 0; x < this.chessBoardSize; x++) {
             for (let y = 0; y < this.chessBoardSize; y++) {
                 const piece: Piece | null = this.chessBoard[x][y];
@@ -82,13 +92,21 @@ export class ChessBoard {
                         if (piece instanceof Pawn && dy === 0) continue;
 
                         const attackedPiece: Piece | null = this.chessBoard[newX][newY];
-                        if (attackedPiece instanceof King && attackedPiece.color === playerColor) return true;
+                        if (attackedPiece instanceof King && attackedPiece.color === playerColor) {
+                            // checkingCurrentPosition is a boolean for real check (otherwise the check is for safe next move)
+                            if (checkingCurrentPosition) this._checkState = { isInCheck: true, x: newX, y: newY };
+                            return true;
+                        }
 
                     } else {
                         // For case (Queen, Rook, Bishop)
                         while (this.areCoordsValid(newX, newY)) {
                             const attackedPiece: Piece | null = this.chessBoard[newX][newY];
-                            if (attackedPiece instanceof King && attackedPiece.color === playerColor) return true;
+                            if (attackedPiece instanceof King && attackedPiece.color === playerColor) {
+                                // checkingCurrentPosition is a boolean for real check (otherwise the check is for safe next move)
+                                if (checkingCurrentPosition) this._checkState = { isInCheck: true, x: newX, y: newY };
+                                return true;
+                            }
 
                             // break if there are other pieces on attacked row - diagonal
                             if (attackedPiece !== null) break;
@@ -100,6 +118,7 @@ export class ChessBoard {
                 }
             }
         }
+        if (checkingCurrentPosition) this._checkState = { isInCheck: false };
         return false;
     }
 
@@ -114,7 +133,7 @@ export class ChessBoard {
         this.chessBoard[prevX][prevY] = null;
         this.chessBoard[newX][newY] = piece
 
-        const isPositionSafe: boolean = !this.isInCheck(piece.color);
+        const isPositionSafe: boolean = !this.isInCheck(piece.color, false);
 
         // restore position back
         this.chessBoard[prevX][prevY] = piece;
@@ -148,7 +167,7 @@ export class ChessBoard {
 
                     // need to restrict pawn moves in certain direction
                     if (piece instanceof Pawn) {
-                        
+
                         // if there are already a pice cannot move 2 forward
                         if (dx === 2 || dx === -2) {
                             if (newPiece) continue;
@@ -194,7 +213,7 @@ export class ChessBoard {
                 }
             }
         }
-        
+
         return safeSquares;
     }
 
@@ -216,12 +235,20 @@ export class ChessBoard {
             piece.hasMoved = true;
         }
 
-        // update the board
+        // Update the board
         this.chessBoard[prevX][prevY] = null;
         this.chessBoard[newX][newY] = piece;
 
-        // Change the player and recalculate all safe squares for all pieces
+        // Save last move
+        this._lastMove = { piece, prevX, prevY, currX: newX, currY: newY };
+
+        // Change color
         this._playerColor = this._playerColor === Color.White ? Color.Black : Color.White;
+
+        // After changing the color check if current player is in check;
+        this.isInCheck(this._playerColor, true);
+
+        // Recalculate all safe squares for all pieces
         this._safeSquares = this.findSafeSquares();
     }
 }

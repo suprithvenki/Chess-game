@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ChessBoard } from '../chess-logic/chess-board.js';
-import { Color, Coords, FENChar, SafeSquares, pieceImagePaths } from '../chess-logic/models.js';
+import { CheckState, Color, Coords, FENChar, LastMove, SafeSquares, pieceImagePaths } from '../chess-logic/models.js';
 import { SelectedSquare } from './models.js';
 
 @Component({
@@ -19,6 +19,8 @@ export class ChessBoardComponent {
 
   private selectedSquare: SelectedSquare = { piece: null };
   private pieceSafeSquare: Coords[] = [];
+  private lastMove: LastMove | undefined = this.chessBoard.lastMove;
+  private checkState: CheckState = this.chessBoard.checkState;
 
   public get safeSquares(): SafeSquares {
     return this.chessBoard.safeSquares;
@@ -39,8 +41,26 @@ export class ChessBoardComponent {
     return this.selectedSquare.x === x && this.selectedSquare.y === y;
   }
 
+  // For css
+  public isSquareLastMove(x: number, y: number): boolean {
+    if (!this.lastMove) return false;
+    const { prevX, prevY, currX, currY } = this.lastMove;
+    return x === prevX && y === prevY || x === currX && y == currY;
+  }
+
+  // For css
+  public isSquareChecked(x: number, y: number): boolean {
+    return this.checkState.isInCheck && this.checkState.x === x && this.checkState.y === y;
+  }
+
   public isSquareSafeForSelectedPiece(x: number, y: number): boolean {
     return this.pieceSafeSquare.some(coords => coords.x === x && coords.y === y);
+  }
+
+  // Remove the selected square
+  private unmarkingPreviouslySelectedAndSafeSquares(): void {
+    this.selectedSquare = { piece: null };
+    this.pieceSafeSquare = [];
   }
 
   // it will select the piece and hold it in component variable 'selectedSquare'
@@ -48,6 +68,11 @@ export class ChessBoardComponent {
     const piece: FENChar | null = this.chessBoardView[x][y];
     if (!piece) return;
     if (this.isWrongPieceSelected(piece)) return;
+
+    // 
+    const isSameSquareClicked: boolean = !!this.selectedSquare.piece && this.selectedSquare.x === x && this.selectedSquare.y === y;
+    this.unmarkingPreviouslySelectedAndSafeSquares();
+    if (isSameSquareClicked) return;
 
     this.selectedSquare = { piece, x, y };
     // Store the safe moves for selected piece
@@ -62,6 +87,9 @@ export class ChessBoardComponent {
     const { x: prevX, y: prevY } = this.selectedSquare;
     this.chessBoard.move(prevX, prevY, newX, newY);
     this.chessBoardView = this.chessBoard.chessBoardView;
+    this.checkState = this.chessBoard.checkState;
+    this.lastMove = this.chessBoard.lastMove;
+    this.unmarkingPreviouslySelectedAndSafeSquares();
   }
 
   // It will be run called every time when a square is clicked
