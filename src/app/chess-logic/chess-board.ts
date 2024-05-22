@@ -207,6 +207,14 @@ export class ChessBoard {
                     }
                 }
 
+                // Add to safeSquares coordinates if king can castle
+                if (piece instanceof King) {
+                    // Check if it can castle king side
+                    if (this.canCastle(piece, true)) pieceSafeSquares.push({ x, y: 6 });
+                    // Check if it can castle queen side
+                    if (this.canCastle(piece, false)) pieceSafeSquares.push({ x, y: 2 });
+                }
+
                 // Add possible moves for every piece base on coordinate as key
                 if (pieceSafeSquares.length) {
                     safeSquares.set(x + ',' + y, pieceSafeSquares);
@@ -215,6 +223,29 @@ export class ChessBoard {
         }
 
         return safeSquares;
+    }
+
+    // It check if castle is possible
+    private canCastle(king: King, kingSideCastle: boolean): boolean {
+        if (king.hasMoved) return false;
+
+        const kingPositionX: number = king.color === Color.White ? 0 : 7;
+        const kingPositionY: number = 4;
+        const rookPositionX: number = kingPositionX;
+        const rookPositionY: number = kingSideCastle ? 7 : 0;
+        const rook: Piece | null = this.chessBoard[rookPositionX][rookPositionY];
+
+        if (!(rook instanceof Rook) || rook.hasMoved || this._checkState.isInCheck) return false;
+
+        const firstNextKingPositionY: number = kingPositionY + (kingSideCastle ? 1 : -1);
+        const secondNextKingPositionY: number = kingPositionY + (kingSideCastle ? 2 : -2);
+
+        if (this.chessBoard[kingPositionX][firstNextKingPositionY] || this.chessBoard[kingPositionX][secondNextKingPositionY]) return false;
+
+        if (!kingSideCastle && this.chessBoard[kingPositionX][1]) return false;
+
+        return this.isPositionSafeAfterMove(king, kingPositionX, kingPositionY, kingPositionX, firstNextKingPositionY) &&
+            this.isPositionSafeAfterMove(king, kingPositionX, kingPositionY, kingPositionX, secondNextKingPositionY);
     }
 
     public move(prevX: number, prevY: number, newX: number, newY: number): void {
@@ -235,6 +266,9 @@ export class ChessBoard {
             piece.hasMoved = true;
         }
 
+        // Will make the move of the rook in castle case
+        this.handlingSpecialMoves(piece, prevX, prevY, newX, newY);
+
         // Update the board
         this.chessBoard[prevX][prevY] = null;
         this.chessBoard[newX][newY] = piece;
@@ -250,5 +284,22 @@ export class ChessBoard {
 
         // Recalculate all safe squares for all pieces
         this._safeSquares = this.findSafeSquares();
+    }
+
+    private handlingSpecialMoves(piece: Piece, prevX: number, prevY: number, newX: number, newY: number): void {
+        if (piece instanceof King && Math.abs(newY - prevY) === 2) {
+            // newY > prevY === king side castle
+
+            // Take ref to the rook
+            const rookPositionX: number = prevX;
+            const rookPositionY: number = newY > prevY ? 7 : 0;
+            const rook = this.chessBoard[rookPositionX][rookPositionY] as Rook;
+            const rookNewPositionY: number = newY > prevY ? 5 : 3;
+
+            // Move the rook
+            this.chessBoard[rookPositionX][rookPositionY] = null;
+            this.chessBoard[rookPositionX][rookNewPositionY] = rook;
+            rook.hasMoved = true;
+        }
     }
 }
