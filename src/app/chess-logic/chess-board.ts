@@ -131,7 +131,7 @@ export class ChessBoard {
 
         // simulate position
         this.chessBoard[prevX][prevY] = null;
-        this.chessBoard[newX][newY] = piece
+        this.chessBoard[newX][newY] = piece;
 
         const isPositionSafe: boolean = !this.isInCheck(piece.color, false);
 
@@ -214,6 +214,10 @@ export class ChessBoard {
                     // Check if it can castle queen side
                     if (this.canCastle(piece, false)) pieceSafeSquares.push({ x, y: 2 });
                 }
+                // Add to safeSquares coordinates if pawn can En Passant
+                else if (piece instanceof Pawn && this.canCaptureEnPassant(piece, x, y)) {
+                    pieceSafeSquares.push({ x: x + (piece.color === Color.White ? 1 : -1), y: this._lastMove!.prevY });
+                }
 
                 // Add possible moves for every piece base on coordinate as key
                 if (pieceSafeSquares.length) {
@@ -223,6 +227,31 @@ export class ChessBoard {
         }
 
         return safeSquares;
+    }
+
+    // It check if En Passant is possible
+    private canCaptureEnPassant(pawn: Pawn, pawnX: number, pawnY: number): boolean {
+        // If there isn't last move En Passant is not possible
+        if (!this._lastMove) return false;
+
+        const { piece, prevX, prevY, currX, currY } = this._lastMove;
+        // requirements for En Passant
+        if (!(piece instanceof Pawn) ||
+            pawn.color !== this._playerColor ||
+            Math.abs(currX - prevX) !== 2 ||
+            pawnX !== currX ||
+            Math.abs(pawnY - currY) !== 1
+        ) return false;
+
+        const pawnNewPositionX: number = pawnX + (pawn.color === Color.White ? 1 : -1);
+        const pawnNewPositionY: number = currY;
+
+        // Remove enemy pawn check if position is safe after enPassant move, then return enemy pawn to its position
+        this.chessBoard[currX][currY] = null;
+        const isPositionSafe: boolean = this.isPositionSafeAfterMove(pawn, pawnX, pawnY, pawnNewPositionX, pawnNewPositionY);
+        this.chessBoard[currX][currY] = piece;
+
+        return isPositionSafe;
     }
 
     // It check if castle is possible
@@ -266,7 +295,7 @@ export class ChessBoard {
             piece.hasMoved = true;
         }
 
-        // Will make the move of the rook in castle case
+        // For special moves: (Castle - it moves the Rook, En Passant - it removes the enemy pawn)
         this.handlingSpecialMoves(piece, prevX, prevY, newX, newY);
 
         // Update the board
@@ -287,6 +316,8 @@ export class ChessBoard {
     }
 
     private handlingSpecialMoves(piece: Piece, prevX: number, prevY: number, newX: number, newY: number): void {
+        // For case: Castle 
+        // It moves the Rook after Castle
         if (piece instanceof King && Math.abs(newY - prevY) === 2) {
             // newY > prevY === king side castle
 
@@ -300,6 +331,18 @@ export class ChessBoard {
             this.chessBoard[rookPositionX][rookPositionY] = null;
             this.chessBoard[rookPositionX][rookNewPositionY] = rook;
             rook.hasMoved = true;
+        }
+        // For case: En Passant
+        // It removes the enemy pawn
+        else if (
+            piece instanceof Pawn &&
+            this._lastMove &&
+            this._lastMove.piece instanceof Pawn &&
+            Math.abs(this._lastMove.currX - this._lastMove.prevX) === 2 &&
+            prevX === this._lastMove.currX &&
+            newY === this._lastMove.currY
+        ) {
+            this.chessBoard[this._lastMove.currX][this._lastMove.currY] = null;
         }
     }
 }
