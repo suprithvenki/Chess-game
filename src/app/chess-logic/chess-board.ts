@@ -123,7 +123,10 @@ export class ChessBoard {
     }
 
     // It check if after the move our King is safe 
-    private isPositionSafeAfterMove(piece: Piece, prevX: number, prevY: number, newX: number, newY: number): boolean {
+    private isPositionSafeAfterMove(prevX: number, prevY: number, newX: number, newY: number): boolean {
+        const piece: Piece | null = this.chessBoard[prevX][prevY];
+        if (!piece) return false;
+
         const newPiece: Piece | null = this.chessBoard[newX][newY];
 
         // cant put piece on a square that already contain piece of the same color
@@ -183,7 +186,7 @@ export class ChessBoard {
                     }
 
                     if (piece instanceof Pawn || piece instanceof Knight || piece instanceof King) {
-                        if (this.isPositionSafeAfterMove(piece, x, y, newX, newY)) {
+                        if (this.isPositionSafeAfterMove(x, y, newX, newY)) {
                             pieceSafeSquares.push({ x: newX, y: newY });
                         }
                     } else {
@@ -193,7 +196,7 @@ export class ChessBoard {
                             // If encounter the same color piece stop scanning in this direction
                             if (newPiece && newPiece.color === piece.color) break;
 
-                            if (this.isPositionSafeAfterMove(piece, x, y, newX, newY)) {
+                            if (this.isPositionSafeAfterMove(x, y, newX, newY)) {
                                 pieceSafeSquares.push({ x: newX, y: newY });
                             }
 
@@ -248,7 +251,7 @@ export class ChessBoard {
 
         // Remove enemy pawn check if position is safe after enPassant move, then return enemy pawn to its position
         this.chessBoard[currX][currY] = null;
-        const isPositionSafe: boolean = this.isPositionSafeAfterMove(pawn, pawnX, pawnY, pawnNewPositionX, pawnNewPositionY);
+        const isPositionSafe: boolean = this.isPositionSafeAfterMove(pawnX, pawnY, pawnNewPositionX, pawnNewPositionY);
         this.chessBoard[currX][currY] = piece;
 
         return isPositionSafe;
@@ -273,11 +276,11 @@ export class ChessBoard {
 
         if (!kingSideCastle && this.chessBoard[kingPositionX][1]) return false;
 
-        return this.isPositionSafeAfterMove(king, kingPositionX, kingPositionY, kingPositionX, firstNextKingPositionY) &&
-            this.isPositionSafeAfterMove(king, kingPositionX, kingPositionY, kingPositionX, secondNextKingPositionY);
+        return this.isPositionSafeAfterMove(kingPositionX, kingPositionY, kingPositionX, firstNextKingPositionY) &&
+            this.isPositionSafeAfterMove(kingPositionX, kingPositionY, kingPositionX, secondNextKingPositionY);
     }
 
-    public move(prevX: number, prevY: number, newX: number, newY: number): void {
+    public move(prevX: number, prevY: number, newX: number, newY: number, promotedPiceType: FENChar | null): void {
         if (!this.areCoordsValid(prevX, prevY) || !this.areCoordsValid(newX, newY)) return;
 
         // Check for color
@@ -298,9 +301,14 @@ export class ChessBoard {
         // For special moves: (Castle - it moves the Rook, En Passant - it removes the enemy pawn)
         this.handlingSpecialMoves(piece, prevX, prevY, newX, newY);
 
-        // Update the board
+        // Update the board if the function is called with promotedPiceType !== null
+        if (promotedPiceType) {
+            // In case of promotion
+            this.chessBoard[newX][newY] = this.promotedPiece(promotedPiceType);
+        } else {
+            this.chessBoard[newX][newY] = piece;
+        }
         this.chessBoard[prevX][prevY] = null;
-        this.chessBoard[newX][newY] = piece;
 
         // Save last move
         this._lastMove = { piece, prevX, prevY, currX: newX, currY: newY };
@@ -344,5 +352,13 @@ export class ChessBoard {
         ) {
             this.chessBoard[this._lastMove.currX][this._lastMove.currY] = null;
         }
+    }
+
+    // It creates new instance of piece base of the income parameters
+    private promotedPiece(promotedPiceType: FENChar): Knight | Bishop | Rook | Queen {
+        if (promotedPiceType === FENChar.WhiteKnight || promotedPiceType === FENChar.BlackKnight) return new Knight(this._playerColor);
+        if (promotedPiceType === FENChar.WhiteBishop || promotedPiceType === FENChar.BlackBishop) return new Bishop(this._playerColor);
+        if (promotedPiceType === FENChar.WhiteRook || promotedPiceType === FENChar.BlackRook) return new Rook(this._playerColor);
+        return new Queen(this._playerColor);
     }
 }
