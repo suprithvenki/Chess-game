@@ -30,6 +30,10 @@ export class ChessBoardComponent {
     return this.chessBoard.playerColor;
   }
 
+  public get gameOverMessage(): string | undefined {
+    return this.chessBoard.gameOverMessage;
+  }
+
   // promotion properties
   public isPromotionActive: boolean = false;
   private promotionCoords: Coords | null = null;
@@ -86,6 +90,9 @@ export class ChessBoardComponent {
 
   // it will select the piece and hold it in component variable 'selectedSquare'
   public selectingPiece(x: number, y: number): void {
+    // Game is over
+    if (this.gameOverMessage !== undefined) return;
+
     const piece: FENChar | null = this.chessBoardView[x][y];
     if (!piece) return;
     if (this.isWrongPieceSelected(piece)) return;
