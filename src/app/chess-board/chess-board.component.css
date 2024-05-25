@@ -32,6 +32,9 @@
 }
 
 .promotion-dialog {
+    position: relative;
+    margin-top: 60px;
+    /*  */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -40,7 +43,7 @@
 }
 
 .promotion-dialog img {
-    height: 70px;
+    height: 60px;
     cursor: pointer;
 }
 

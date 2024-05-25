@@ -15,6 +15,10 @@ export class ChessBoard {
     private _lastMove: LastMove | undefined;
     private _checkState: CheckState = { isInCheck: false };
 
+    private fiftyMoveRuleCounter: number = 0;
+    private _isGameOver: boolean = false;
+    private _gameOverMessage: string | undefined;
+
     constructor() {
         this.chessBoard = [
             [
@@ -62,6 +66,14 @@ export class ChessBoard {
 
     public get checkState(): CheckState {
         return this._checkState;
+    }
+
+    public get isGameOver(): boolean {
+        return this._isGameOver;
+    }
+
+    public get gameOverMessage(): string | undefined {
+        return this._gameOverMessage;
     }
 
     public static isSquareDark(x: number, y: number): boolean {
@@ -298,6 +310,16 @@ export class ChessBoard {
             piece.hasMoved = true;
         }
 
+        // For fifty move rule 
+        const isPieceTaken: boolean = this.chessBoard[newX][newY] !== null;
+        if (piece instanceof Pawn || isPieceTaken) {
+            // If pawn is moved or piece is taken reset the counter
+            this.fiftyMoveRuleCounter = 0;
+        } else {
+            // Else add to the counter (add 0.5 because this will be run by both players)
+            this.fiftyMoveRuleCounter += 0.5;
+        }
+
         // For special moves: (Castle - it moves the Rook, En Passant - it removes the enemy pawn)
         this.handlingSpecialMoves(piece, prevX, prevY, newX, newY);
 
@@ -321,6 +343,9 @@ export class ChessBoard {
 
         // Recalculate all safe squares for all pieces
         this._safeSquares = this.findSafeSquares();
+
+        // Check if game have finished
+        this._isGameOver = this.isGameFinished();
     }
 
     private handlingSpecialMoves(piece: Piece, prevX: number, prevY: number, newX: number, newY: number): void {
@@ -360,5 +385,30 @@ export class ChessBoard {
         if (promotedPiceType === FENChar.WhiteBishop || promotedPiceType === FENChar.BlackBishop) return new Bishop(this._playerColor);
         if (promotedPiceType === FENChar.WhiteRook || promotedPiceType === FENChar.BlackRook) return new Rook(this._playerColor);
         return new Queen(this._playerColor);
+    }
+
+    // It check if the game have finished 
+    private isGameFinished(): boolean {
+        // If there are no possible moves in safeSquares it means that the game is finish
+        if (!this._safeSquares.size) {
+            // If current player is in check that means that enemy player have won the game
+            if (this._checkState.isInCheck) {
+                const prevPlayer: string = this._playerColor === Color.White ? 'Black' : 'White';
+                this._gameOverMessage = `${prevPlayer} won by checkmate`;
+            } else {
+                // If current player is not in check that means that game have ended in stalemate
+                this._gameOverMessage = 'Stalemate';
+            }
+
+            return true;
+        }
+
+        // If game is over due to fifty move rule
+        if (this.fiftyMoveRuleCounter === 50) {
+            this._gameOverMessage = 'Draw due to fifty move rule';
+            return true;
+        }
+
+        return false;
     }
 }
