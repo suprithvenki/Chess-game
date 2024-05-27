@@ -6,6 +6,7 @@ import { Pawn } from "./pieces/pawn.js";
 import { Piece } from "./pieces/piece.js";
 import { Queen } from "./pieces/queen.js";
 import { Rook } from "./pieces/rook.js";
+import { FENConverter } from "./FENConverter.js";
 
 export class ChessBoard {
     private readonly chessBoardSize: number = 8;
@@ -19,6 +20,12 @@ export class ChessBoard {
     private _isGameOver: boolean = false;
     private _gameOverMessage: string | undefined;
     private fullNumberOfMoves: number = 1;
+
+    private threeFoldRepetitionDictionary = new Map<string, number>();
+    private threeFoldRepetitionFlag: boolean = false;
+
+    private _boardAsFEN: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+    private FENConverter = new FENConverter();
 
     constructor() {
         this.chessBoard = [
@@ -75,6 +82,10 @@ export class ChessBoard {
 
     public get gameOverMessage(): string | undefined {
         return this._gameOverMessage;
+    }
+
+    public get boardAsFEN(): string {
+        return this._boardAsFEN;
     }
 
     public static isSquareDark(x: number, y: number): boolean {
@@ -350,10 +361,16 @@ export class ChessBoard {
         // Recalculate all safe squares for all pieces
         this._safeSquares = this.findSafeSquares();
 
+        // !!! Player color should be change first for this logic to work !!!
+        // It updates the number of full turns
+        if (this._playerColor === Color.White) this.fullNumberOfMoves++;
+        
+        // It converts the current board into FEN, and update the state for repetition for case same position 3 times 
+        this._boardAsFEN = this.FENConverter.convertBoardToFEN(this.chessBoard, this._playerColor, this._lastMove, this.fiftyMoveRuleCounter, this.fullNumberOfMoves);
+        this.updateThreeFoldRepetitionDictionary(this._boardAsFEN);
+
         // Check if game have finished
         this._isGameOver = this.isGameFinished();
-
-        if (this._playerColor === Color.White) this.fullNumberOfMoves++;
     }
 
     private handlingSpecialMoves(piece: Piece, prevX: number, prevY: number, newX: number, newY: number): void {
@@ -414,6 +431,12 @@ export class ChessBoard {
                 this._gameOverMessage = 'Stalemate';
             }
 
+            return true;
+        }
+
+        // If game is over due to repetition
+        if (this.threeFoldRepetitionFlag) {
+            this._gameOverMessage = 'Draw due to three fold repetition rule';
             return true;
         }
 
@@ -496,5 +519,21 @@ export class ChessBoard {
         ) return true
 
         return false;
+    }
+
+    // It save the position in threeFoldRepetitionDictionary;
+    // If it happen for 3th time set threeFoldRepetitionFlag to true
+    private updateThreeFoldRepetitionDictionary(FEN: string): void {
+        const threeFoldRepetitionFENKey: string = FEN.split(' ').slice(0, 4).join(''); //Outcome example: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNRwKQkq-
+        const threeFoldRepetitionValue: number | undefined = this.threeFoldRepetitionDictionary.get(threeFoldRepetitionFENKey);
+
+        if (threeFoldRepetitionValue === undefined) {
+            this.threeFoldRepetitionDictionary.set(threeFoldRepetitionFENKey, 1);
+        } else {
+            if (threeFoldRepetitionValue === 2) {
+                this.threeFoldRepetitionFlag = true;
+            }
+            this.threeFoldRepetitionDictionary.set(threeFoldRepetitionFENKey, 2);
+        }
     }
 }
