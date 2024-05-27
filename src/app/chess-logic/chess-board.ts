@@ -21,26 +21,35 @@ export class ChessBoard {
 
     constructor() {
         this.chessBoard = [
-            [
-                new Rook(Color.White), new Knight(Color.White), new Bishop(Color.White), new Queen(Color.White),
-                new King(Color.White), new Bishop(Color.White), new Knight(Color.White), new Rook(Color.White)
-            ],
-            [
-                new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White),
-                new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White)
-            ],
+            // [
+            //     new Rook(Color.White), new Knight(Color.White), new Bishop(Color.White), new Queen(Color.White),
+            //     new King(Color.White), new Bishop(Color.White), new Knight(Color.White), new Rook(Color.White)
+            // ],
+            // [
+            //     new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White),
+            //     new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White)
+            // ],
+            // [null, null, null, null, null, null, null, null],
+            // [null, null, null, null, null, null, null, null],
+            // [null, null, null, null, null, null, null, null],
+            // [null, null, null, null, null, null, null, null],
+            // [
+            //     new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black),
+            //     new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black)
+            // ],
+            // [
+            //     new Rook(Color.Black), new Knight(Color.Black), new Bishop(Color.Black), new Queen(Color.Black),
+            //     new King(Color.Black), new Bishop(Color.Black), new Knight(Color.Black), new Rook(Color.Black)
+            // ]
+
+            [null, null, null, new Bishop(Color.White), null, new Bishop(Color.White), null, null],
+            [null, null, null, new King(Color.White), null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
-            [
-                new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black),
-                new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black)
-            ],
-            [
-                new Rook(Color.Black), new Knight(Color.Black), new Bishop(Color.Black), new Queen(Color.Black),
-                new King(Color.Black), new Bishop(Color.Black), new Knight(Color.Black), new Rook(Color.Black)
-            ]
+            [null, null, null, null, new Rook(Color.Black), new Bishop(Color.Black), null, null],
+            [null, null, null, new King(Color.Black), null, null, null, null],
         ]
 
         this._safeSquares = this.findSafeSquares();
@@ -469,14 +478,14 @@ export class ChessBoard {
             return whitePieces.some(piece => piece.piece instanceof Knight || piece.piece instanceof Bishop);
         }
         // Both sides have bishop of same color 
-        else if (whitePieces.length === 2 && blackPieces, length === 2) {
+        else if (whitePieces.length === 2 && blackPieces.length === 2) {
             const whiteBishop = whitePieces.find(piece => piece.piece instanceof Bishop);
             const blackBishop = blackPieces.find(piece => piece.piece instanceof Bishop);
 
             if (whiteBishop && blackBishop) {
                 // It check if both bishops are on white or both are on black square
-                const areBishopOfSameColor: boolean = ChessBoard.isSquareDark(whiteBishop.x, blackBishop.y) && ChessBoard.isSquareDark(blackBishop.x, blackBishop.y) ||
-                    !ChessBoard.isSquareDark(whiteBishop.x, blackBishop.y) && !ChessBoard.isSquareDark(blackBishop.x, blackBishop.y);
+                const areBishopOfSameColor: boolean = ChessBoard.isSquareDark(whiteBishop.x, whiteBishop.y) && ChessBoard.isSquareDark(blackBishop.x, blackBishop.y) ||
+                    !ChessBoard.isSquareDark(whiteBishop.x, whiteBishop.y) && !ChessBoard.isSquareDark(blackBishop.x, blackBishop.y);
 
                 return areBishopOfSameColor;
             }
