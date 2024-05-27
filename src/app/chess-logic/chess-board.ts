@@ -21,35 +21,26 @@ export class ChessBoard {
 
     constructor() {
         this.chessBoard = [
-            // [
-            //     new Rook(Color.White), new Knight(Color.White), new Bishop(Color.White), new Queen(Color.White),
-            //     new King(Color.White), new Bishop(Color.White), new Knight(Color.White), new Rook(Color.White)
-            // ],
-            // [
-            //     new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White),
-            //     new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White)
-            // ],
-            // [null, null, null, null, null, null, null, null],
-            // [null, null, null, null, null, null, null, null],
-            // [null, null, null, null, null, null, null, null],
-            // [null, null, null, null, null, null, null, null],
-            // [
-            //     new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black),
-            //     new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black)
-            // ],
-            // [
-            //     new Rook(Color.Black), new Knight(Color.Black), new Bishop(Color.Black), new Queen(Color.Black),
-            //     new King(Color.Black), new Bishop(Color.Black), new Knight(Color.Black), new Rook(Color.Black)
-            // ]
-
-            [null, null, null, new Bishop(Color.White), null, new Bishop(Color.White), null, null],
-            [null, null, null, new King(Color.White), null, null, null, null],
+            [
+                new Rook(Color.White), new Knight(Color.White), new Bishop(Color.White), new Queen(Color.White),
+                new King(Color.White), new Bishop(Color.White), new Knight(Color.White), new Rook(Color.White)
+            ],
+            [
+                new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White),
+                new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White), new Pawn(Color.White)
+            ],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
             [null, null, null, null, null, null, null, null],
-            [null, null, null, null, new Rook(Color.Black), new Bishop(Color.Black), null, null],
-            [null, null, null, new King(Color.Black), null, null, null, null],
+            [
+                new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black),
+                new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black), new Pawn(Color.Black)
+            ],
+            [
+                new Rook(Color.Black), new Knight(Color.Black), new Bishop(Color.Black), new Queen(Color.Black),
+                new King(Color.Black), new Bishop(Color.Black), new Knight(Color.Black), new Rook(Color.Black)
+            ]
         ]
 
         this._safeSquares = this.findSafeSquares();
