@@ -1,4 +1,4 @@
-<div class="chess-board">
+<div class="chess-board" [ngClass]="{'rotated': flipMode}">
     <div *ngFor="let row of chessBoardView; let x = index" class="row">
         <div *ngFor="let piece of row; let y = index" class="square" [ngClass]="{
                 'dark': isSquareDark(x, y), 
@@ -8,19 +8,22 @@
                 'king-in-check': isSquareChecked(x, y),
                 'promotion-square': isSquarePromotionSquare(x, y) }" (click)="move(x, y)">
             <div [ngClass]="{'safe-square': isSquareSafeForSelectedPiece(x, y)}"></div>
-            <img *ngIf="piece" [src]="pieceImagePaths[piece]" [alt]="piece" class="piece">
+            <img *ngIf="piece" [src]="pieceImagePaths[piece]" [alt]="piece" class="piece"
+                [ngClass]="{'rotated': flipMode}">
         </div>
     </div>
+</div>
 
-    <h2 *ngIf="gameOverMessage" class="game-over-message">
-        {{gameOverMessage}}
-    </h2>
+<button (click)="flipBoard()">Flip</button>
 
-    <div *ngIf="isPromotionActive" class="promotion-dialog">
-        <img *ngFor="let piece of promotionPieces()" [src]="pieceImagePaths[piece]" (click)="promotePiece(piece)">
+<h2 *ngIf="gameOverMessage" class="game-over-message">
+    {{gameOverMessage}}
+</h2>
 
-        <span class="close-promotion-dialog" (click)="closePawnPromotionDialog()">
-            &times;
-        </span>
-    </div>
+<div *ngIf="isPromotionActive" class="promotion-dialog">
+    <img *ngFor="let piece of promotionPieces()" [src]="pieceImagePaths[piece]" (click)="promotePiece(piece)">
+
+    <span class="close-promotion-dialog" (click)="closePawnPromotionDialog()">
+        &times;
+    </span>
 </div>

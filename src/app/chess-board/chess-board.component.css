@@ -28,14 +28,10 @@
 
 
 .game-over-message {
-    margin-top: 60px;
-    /* -- */
     color: white;
 }
 
 .promotion-dialog {
-    margin-top: 60px;
-    /* -- */
     display: flex;
     justify-content: center;
     align-items: center;
