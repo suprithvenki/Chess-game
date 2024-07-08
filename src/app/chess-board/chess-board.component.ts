@@ -7,8 +7,8 @@ import { SelectedSquare } from './models.js';
 
 @Component({
   selector: 'app-chess-board',
-  standalone: true,
-  imports: [CommonModule],
+  // standalone: true,
+  // imports: [CommonModule],
   templateUrl: './chess-board.component.html',
   styleUrl: './chess-board.component.css'
 })
