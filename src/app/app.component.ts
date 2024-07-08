@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ChessBoardComponent } from './chess-board/chess-board.component.js';
+import { ChessBoardComponent } from './modules/chess-board/chess-board.component.js';
 
 @Component({
   selector: 'app-root',

@@ -1,4 +1,4 @@
-import { FENChar } from "../chess-logic/models.js"
+import { FENChar } from "../../chess-logic/models.js"
 
 type SquareWithPiece = {
     piece: FENChar;

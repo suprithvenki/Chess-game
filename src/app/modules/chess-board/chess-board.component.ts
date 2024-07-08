@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { ChessBoard } from '../chess-logic/chess-board.js';
-import { CheckState, Color, Coords, FENChar, LastMove, SafeSquares, pieceImagePaths } from '../chess-logic/models.js';
+import { ChessBoard } from '../../chess-logic/chess-board.js';
+import { CheckState, Color, Coords, FENChar, LastMove, SafeSquares, pieceImagePaths } from '../../chess-logic/models.js';
 import { SelectedSquare } from './models.js';
 
 @Component({

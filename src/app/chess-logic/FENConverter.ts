@@ -1,4 +1,4 @@
-import { columns } from "../chess-board/models.js";
+import { columns } from "../modules/chess-board/models.js";
 import { Color, LastMove } from "./models.js";
 import { King } from "./pieces/king.js";
 import { Pawn } from "./pieces/pawn.js";
