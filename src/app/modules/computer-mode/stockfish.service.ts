@@ -13,13 +13,18 @@ export class StockfishService {
   private readonly api: string = 'https://stockfish.online/api/s/v2.php';
   private http = inject(HttpClient);
 
-  //
+  /*
+    It will give as the number in the array
+    Based on UTF-16 will get the char code number for our char and will subtract it from the char code number of character 'a'
+  */
   private convertColumnLetterToYCoord(string: string): number {
     return string.charCodeAt(0) - 'a'.charCodeAt(0);
   }
-
-  // In case best move by stockfish include piece promotion 
-  // (the move will have 5 char in that case and this should handle the last one) 
+  
+  /*
+    In case best move by stockfish include piece promotion 
+    (the move will have 5 char in that case and this should handle the last one) 
+  */
   private promotedPiece(piece: string | undefined): FENChar | null {
     if (!piece) return null;
     if (piece === 'n') return FENChar.BlackKnight;
@@ -32,7 +37,7 @@ export class StockfishService {
   private moveFromStockFishString(move: string): ChessMove {
     // Example for move param: b7b6 (there could be 5 letters in case of promoted Piece)
     const prevY: number = this.convertColumnLetterToYCoord(move[0]);
-    const prevX: number = Number(move[1]) - 1;
+    const prevX: number = Number(move[1]) - 1; // The API will give as the number and we need to subtract -1 cuz the array start at zero
     const newY: number = this.convertColumnLetterToYCoord(move[2]);
     const newX: number = Number(move[3]) - 1;
     const promotedPiece = this.promotedPiece(move[4]);

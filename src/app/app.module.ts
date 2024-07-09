@@ -1,7 +1,7 @@
 import { NgModule } from "@angular/core";
 import { BrowserModule } from "@angular/platform-browser";
 import { RouterOutlet } from "@angular/router";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpClientModule } from "@angular/common/http";
 
 import { AppComponent } from "./app.component";
 import { ChessBoardComponent } from "./modules/chess-board/chess-board.component";
@@ -20,9 +20,10 @@ import { NavMenuComponent } from "./modules/nav-menu/nav-menu.component";
     imports: [
         BrowserModule,
         AppRoutingModule,
-        NavMenuComponent
+        NavMenuComponent,
+        HttpClientModule
     ],
-    providers: [HttpClient],
+    providers: [],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

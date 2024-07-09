@@ -7,6 +7,8 @@ import { Rook } from "./pieces/rook.js";
 
 export class FENConverter {
 
+    public static readonly initialPosition: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
     // It converts the board into Forsyth–Edwards Notation more info here: https://en.wikipedia.org/wiki/Forsyth-Edwards_Notation
     public convertBoardToFEN(
         board: (Piece | null)[][],

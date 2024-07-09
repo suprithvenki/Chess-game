@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 import { ChessBoard } from '../../chess-logic/chess-board.js';
 import { CheckState, Color, Coords, FENChar, LastMove, SafeSquares, pieceImagePaths } from '../../chess-logic/models.js';
 import { SelectedSquare } from './models.js';
+import { ChessBoardService } from './chess-board.service.js';
+import { FENConverter } from '../../chess-logic/FENConverter.js';
 
 @Component({
   selector: 'app-chess-board',
@@ -12,7 +15,7 @@ import { SelectedSquare } from './models.js';
   templateUrl: './chess-board.component.html',
   styleUrl: './chess-board.component.css'
 })
-export class ChessBoardComponent {
+export class ChessBoardComponent implements OnDestroy {
   public pieceImagePaths = pieceImagePaths;
   private chessBoard = new ChessBoard();
   public chessBoardView: (FENChar | null)[][] = this.chessBoard.chessBoardView;
@@ -45,6 +48,14 @@ export class ChessBoardComponent {
   }
 
   public flipMode: boolean = false;
+  protected subscriptions$ = new Subscription();
+
+  constructor(protected chessBoardService: ChessBoardService){};
+
+  ngOnDestroy(): void {
+    this.subscriptions$.unsubscribe();
+    this.chessBoardService.chessBoardState$.next(FENConverter.initialPosition);
+  }
 
   public flipBoard(): void {
     this.flipMode = !this.flipMode;
@@ -132,16 +143,17 @@ export class ChessBoardComponent {
     }
 
     const { x: prevX, y: prevY } = this.selectedSquare;
-    this.updateBoard(prevX, prevY, newX, newY);
+    this.updateBoard(prevX, prevY, newX, newY, this.promotedPiece);
   }
 
   // make the move and update the board
-  private updateBoard(prevX: number, prevY: number, newX: number, newY: number): void {
-    this.chessBoard.move(prevX, prevY, newX, newY, this.promotedPiece);
+  protected updateBoard(prevX: number, prevY: number, newX: number, newY: number, promotedPiece: FENChar | null): void {
+    this.chessBoard.move(prevX, prevY, newX, newY, promotedPiece);
     this.chessBoardView = this.chessBoard.chessBoardView;
     this.checkState = this.chessBoard.checkState;
     this.lastMove = this.chessBoard.lastMove;
     this.unmarkingPreviouslySelectedAndSafeSquares();
+    this.chessBoardService.chessBoardState$.next(this.chessBoard.boardAsFEN);
   }
 
   // promote handler (this is called after the user select(click) on the piece that he wants to get)
@@ -150,7 +162,7 @@ export class ChessBoardComponent {
     this.promotedPiece = piece;
     const { x: newX, y: newY } = this.promotionCoords;
     const { x: prevX, y: prevY } = this.selectedSquare;
-    this.updateBoard(prevX, prevY, newX, newY);
+    this.updateBoard(prevX, prevY, newX, newY, this.promotedPiece);
   }
 
   // It's close promotion dialog 
