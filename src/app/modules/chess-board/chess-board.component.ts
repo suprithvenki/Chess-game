@@ -17,7 +17,8 @@ import { FENConverter } from '../../chess-logic/FENConverter.js';
 })
 export class ChessBoardComponent implements OnDestroy {
   public pieceImagePaths = pieceImagePaths;
-  private chessBoard = new ChessBoard();
+  
+  protected chessBoard = new ChessBoard();
   public chessBoardView: (FENChar | null)[][] = this.chessBoard.chessBoardView;
 
   private selectedSquare: SelectedSquare = { piece: null };
