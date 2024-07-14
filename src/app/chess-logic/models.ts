@@ -42,12 +42,22 @@ export const pieceImagePaths: Readonly<Record<FENChar, string>> = {
 
 export type SafeSquares = Map<string, Coords[]>;
 
+export enum MoveType {
+    Capture,
+    Castling,
+    Promotion,
+    Check,
+    CheckMate,
+    BasicMove
+}
+
 export type LastMove = {
     piece: Piece;
     prevX: number;
     prevY: number;
     currX: number;
     currY: number;
+    moveType: Set<MoveType>
 }
 
 type KingChecked = {
@@ -61,3 +71,11 @@ type KingNotChecked = {
 }
 
 export type CheckState = KingChecked | KingNotChecked;
+
+export type MoveList = ([string, string?])[];
+
+export type GameHistory = {
+    lastMove: LastMove | undefined;
+    checkState: CheckState;
+    board: (FENChar | null)[][];
+}[];

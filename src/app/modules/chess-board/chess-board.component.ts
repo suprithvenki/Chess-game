@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 
 import { ChessBoard } from '../../chess-logic/chess-board.js';
-import { CheckState, Color, Coords, FENChar, LastMove, SafeSquares, pieceImagePaths } from '../../chess-logic/models.js';
+import { CheckState, Color, Coords, FENChar, GameHistory, LastMove, MoveList, SafeSquares, pieceImagePaths } from '../../chess-logic/models.js';
 import { SelectedSquare } from './models.js';
 import { ChessBoardService } from './chess-board.service.js';
 import { FENConverter } from '../../chess-logic/FENConverter.js';
@@ -17,7 +17,7 @@ import { FENConverter } from '../../chess-logic/FENConverter.js';
 })
 export class ChessBoardComponent implements OnDestroy {
   public pieceImagePaths = pieceImagePaths;
-  
+
   protected chessBoard = new ChessBoard();
   public chessBoardView: (FENChar | null)[][] = this.chessBoard.chessBoardView;
 
@@ -25,6 +25,16 @@ export class ChessBoardComponent implements OnDestroy {
   private pieceSafeSquare: Coords[] = [];
   private lastMove: LastMove | undefined = this.chessBoard.lastMove;
   private checkState: CheckState = this.chessBoard.checkState;
+
+  public get moveList(): MoveList {
+    return this.chessBoard.moveList;
+  }
+
+  public get gameHistory(): GameHistory {
+    return this.chessBoard.gameHistory;
+  }
+
+  public gameHistoryPointer: number = 0;
 
   public get safeSquares(): SafeSquares {
     return this.chessBoard.safeSquares;
@@ -51,7 +61,7 @@ export class ChessBoardComponent implements OnDestroy {
   public flipMode: boolean = false;
   protected subscriptions$ = new Subscription();
 
-  constructor(protected chessBoardService: ChessBoardService){};
+  constructor(protected chessBoardService: ChessBoardService) { };
 
   ngOnDestroy(): void {
     this.subscriptions$.unsubscribe();
@@ -155,6 +165,7 @@ export class ChessBoardComponent implements OnDestroy {
     this.lastMove = this.chessBoard.lastMove;
     this.unmarkingPreviouslySelectedAndSafeSquares();
     this.chessBoardService.chessBoardState$.next(this.chessBoard.boardAsFEN);
+    this.gameHistoryPointer++;
   }
 
   // promote handler (this is called after the user select(click) on the piece that he wants to get)
@@ -182,5 +193,13 @@ export class ChessBoardComponent implements OnDestroy {
     const isWhitePieceSelected: boolean = piece === piece.toLocaleUpperCase();
     return isWhitePieceSelected && this.playerColor === Color.Black ||
       !isWhitePieceSelected && this.playerColor === Color.White;
+  }
+
+  public showPreviousPosition(moveIndex: number): void {
+    const { board, checkState, lastMove } = this.gameHistory[moveIndex];
+    this.chessBoardView = board;
+    this.checkState = checkState;
+    this.lastMove = lastMove;
+    this.gameHistoryPointer = moveIndex;
   }
 }

@@ -9,6 +9,7 @@ import { ComputerModeComponent } from "./modules/computer-mode/computer-mode.com
 import { AppRoutingModule } from "./routes/app-router.module";
 import { NavMenuComponent } from "./modules/nav-menu/nav-menu.component";
 import { PlayAgainstComputerDialogComponent } from "./modules/play-against-computer-dialog/play-against-computer-dialog.component";
+import { MoveListComponent } from "./modules/move-list/move-list.component";
 
 
 
@@ -23,6 +24,7 @@ import { PlayAgainstComputerDialogComponent } from "./modules/play-against-compu
         AppRoutingModule,
         NavMenuComponent,
         PlayAgainstComputerDialogComponent,
+        MoveListComponent,
         HttpClientModule
     ],
     providers: [],

@@ -1,12 +1,13 @@
 import { Bishop } from "./pieces/bishop.js";
 import { King } from "./pieces/king.js";
 import { Knight } from "./pieces/knight.js";
-import { CheckState, Color, Coords, FENChar, LastMove, SafeSquares } from "./models.js";
+import { CheckState, Color, Coords, FENChar, GameHistory, LastMove, MoveList, MoveType, SafeSquares } from "./models.js";
 import { Pawn } from "./pieces/pawn.js";
 import { Piece } from "./pieces/piece.js";
 import { Queen } from "./pieces/queen.js";
 import { Rook } from "./pieces/rook.js";
 import { FENConverter } from "./FENConverter.js";
+import { columns } from "../modules/chess-board/models.js";
 
 export class ChessBoard {
     private readonly chessBoardSize: number = 8;
@@ -26,6 +27,9 @@ export class ChessBoard {
 
     private _boardAsFEN: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
     private FENConverter = new FENConverter();
+
+    private _moveList: MoveList = [];                   // Based of the length of this list later in movie-list component.html the $index will be used for navigating to exact turn
+    private _gameHistory: GameHistory;
 
     constructor() {
         this.chessBoard = [
@@ -52,6 +56,7 @@ export class ChessBoard {
         ]
 
         this._safeSquares = this.findSafeSquares();
+        this._gameHistory = [{ board: this.chessBoardView, lastMove: this._lastMove, checkState: this._checkState }];
     }
 
     public get playerColor(): Color {
@@ -86,6 +91,14 @@ export class ChessBoard {
 
     public get boardAsFEN(): string {
         return this._boardAsFEN;
+    }
+
+    public get moveList(): MoveList {
+        return this._moveList
+    }
+
+    public get gameHistory(): GameHistory {
+        return this._gameHistory;
     }
 
     public static isSquareDark(x: number, y: number): boolean {
@@ -327,8 +340,19 @@ export class ChessBoard {
             piece.hasMoved = true;
         }
 
+        /*
+            This variable is used for tracking if on current move are happening base chess events: (Capture, Castling, Promotion, Check, CheckMate or BasicMove)
+            Considering those chess events later the history string notation is formed (added some additional symbols) 
+            This string notation is only used for presenting the history of turns to the users 
+        */
+        const moveType = new Set<MoveType>();
+
         // For fifty move rule 
         const isPieceTaken: boolean = this.chessBoard[newX][newY] !== null;
+
+        // If peace is taken add capture to moveType (marking on this turn for capture base chess event)
+        if (isPieceTaken) moveType.add(MoveType.Capture);
+
         if (piece instanceof Pawn || isPieceTaken) {
             // If pawn is moved or piece is taken reset the counter
             this.fiftyMoveRuleCounter = 0;
@@ -338,19 +362,21 @@ export class ChessBoard {
         }
 
         // For special moves: (Castle - it moves the Rook, En Passant - it removes the enemy pawn)
-        this.handlingSpecialMoves(piece, prevX, prevY, newX, newY);
+        this.handlingSpecialMoves(piece, prevX, prevY, newX, newY, moveType);
 
         // Update the board if the function is called with promotedPiceType !== null
         if (promotedPiceType) {
             // In case of promotion
             this.chessBoard[newX][newY] = this.promotedPiece(promotedPiceType);
+            // In case of promotion (marking on this turn for promotion base chess event)
+            moveType.add(MoveType.Promotion);
         } else {
             this.chessBoard[newX][newY] = piece;
         }
         this.chessBoard[prevX][prevY] = null;
 
         // Save last move
-        this._lastMove = { piece, prevX, prevY, currX: newX, currY: newY };
+        this._lastMove = { piece, prevX, prevY, currX: newX, currY: newY, moveType };
 
         // Change color
         this._playerColor = this._playerColor === Color.White ? Color.Black : Color.White;
@@ -361,10 +387,33 @@ export class ChessBoard {
         // Recalculate all safe squares for all pieces
         this._safeSquares = this.findSafeSquares();
 
-        // !!! Player color should be change first for this logic to work !!!
-        // It updates the number of full turns
+        // If check or checkmate add it to moveType
+        if (this._checkState.isInCheck) {
+            /*
+                If there is a check and safeSquares is empty add checkmate (_safeSquares also include the possible moves from current player piece to block the check)
+                If _safeSquares is not empty that means its only a check and we can ether move our King or block with piece
+                (marking on this turn for checkmate or check base chess event)
+            */
+            moveType.add(!this._safeSquares.size ? MoveType.CheckMate : MoveType.Check);
+        } else if (!moveType.size) {
+            // If on this turn until this moment we don't have any special chess event occurred just add base move 
+            // Add basic move (marking on this turn for base move chess event)
+            moveType.add(MoveType.BasicMove);
+        }
+
+        // Manage history string notation that is visualize to the users
+        this.storeMove(promotedPiceType);
+
+        // Manage the history state, so we can navigate to previous turns
+        this.updateGameHistory();
+
+        /*
+            !!! Player color should be change first for this logic to work !!!
+            It updates the number of full turns
+            After every white move will increase fullNumberOfMoves by one
+         */
         if (this._playerColor === Color.White) this.fullNumberOfMoves++;
-        
+
         // It converts the current board into FEN, and update the state for repetition for case same position 3 times 
         this._boardAsFEN = this.FENConverter.convertBoardToFEN(this.chessBoard, this._playerColor, this._lastMove, this.fiftyMoveRuleCounter, this.fullNumberOfMoves);
         this.updateThreeFoldRepetitionDictionary(this._boardAsFEN);
@@ -373,7 +422,7 @@ export class ChessBoard {
         this._isGameOver = this.isGameFinished();
     }
 
-    private handlingSpecialMoves(piece: Piece, prevX: number, prevY: number, newX: number, newY: number): void {
+    private handlingSpecialMoves(piece: Piece, prevX: number, prevY: number, newX: number, newY: number, moveType: Set<MoveType>): void {
         // For case: Castle 
         // It moves the Rook after Castle
         if (piece instanceof King && Math.abs(newY - prevY) === 2) {
@@ -389,6 +438,10 @@ export class ChessBoard {
             this.chessBoard[rookPositionX][rookPositionY] = null;
             this.chessBoard[rookPositionX][rookNewPositionY] = rook;
             rook.hasMoved = true;
+
+            // If castling is happening add castling to moveType
+            moveType.add(MoveType.Castling);
+
         }
         // For case: En Passant
         // It removes the enemy pawn
@@ -401,6 +454,9 @@ export class ChessBoard {
             newY === this._lastMove.currY
         ) {
             this.chessBoard[this._lastMove.currX][this._lastMove.currY] = null;
+
+            // If En Passant is happening add capturing to moveTypes
+            moveType.add(MoveType.Capture);
         }
     }
 
@@ -535,5 +591,74 @@ export class ChessBoard {
             }
             this.threeFoldRepetitionDictionary.set(threeFoldRepetitionFENKey, 2);
         }
+    }
+
+    /*
+        Will create the visual strings for history
+        Also will save them in _moveList property as array of tuple (white - black) 
+    */
+    private storeMove(promotedPiece: FENChar | null): void {
+        const { piece, currX, currY, prevX, prevY, moveType } = this.lastMove!;
+
+        // For pawn is empty string otherwise is FENChar
+        let pieceName: string = !(piece instanceof Pawn) ? piece.FENChar : '';
+
+        /*
+            Create the history string
+        */
+        let move: string;
+
+        if (moveType.has(MoveType.Castling)) {
+            /* 
+                If current Y is bigger than previous Y it's king side castling
+                O-O     -> King side
+                O-O-O   -> Queen side  
+            */
+            move = currY - prevY === 2 ? 'O-O' : 'O-O-O';
+        } else {
+            move = pieceName + columns[prevY] + String(prevX + 1);
+            if (moveType.has(MoveType.Capture)) move += 'x';
+            move += columns[currY] + String(currX + 1);
+
+            if (promotedPiece) {
+                move += '=' + promotedPiece.toUpperCase();
+            }
+        }
+
+        // Add additional symbols for check and checkmate
+        if (moveType.has(MoveType.Check)) move += '+';
+        else if (moveType.has(MoveType.CheckMate)) move += '#';
+
+
+        /*
+            Append the history string to _moveList
+
+            fullNumberOfMoves will start at 1
+            It will be increase by one for every full turn (full turn is white and black move)
+            In this app after white move the turn will increase (will skip the fist move)
+
+            _moveList is a tuple - the first value is white move the second is black move
+            Simple example: 
+            [['a2a4', 'a7a5], ['b2b4', 'b7b5]]
+        */
+        if (!this._moveList[this.fullNumberOfMoves - 1]) {
+            // For white (will create the tuple)
+            this._moveList[this.fullNumberOfMoves - 1] = [move];
+        } else {
+            // For black (will add to tuple)
+            this._moveList[this.fullNumberOfMoves - 1].push(move);
+        }
+    }
+
+    /*
+        It creates a snapshot of the current state and saving it
+        Later this snapshots are used for history to recreate the board state for the selected turn 
+    */
+    private updateGameHistory(): void {
+        this._gameHistory.push({
+            board: [...this.chessBoardView.map(row => [...row])],
+            checkState: { ... this._checkState },
+            lastMove: this._lastMove ? { ...this._lastMove } : undefined
+        });
     }
 }
