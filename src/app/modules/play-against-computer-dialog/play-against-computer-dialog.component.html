@@ -3,8 +3,8 @@
 
     <div class="stockfish-strength-container">
         @for (level of stockfishLevels; track $index) {
-        <div class="strength-div" (click)="selectStockfishLevel(level)" [ngClass]="{'selected': level === stockfishLevel}">
-            {{level}}
+        <div class="strength-div" (click)="selectStockfishLevel($index)" [ngClass]="{'selected': $index === stockfishLevelIndex}">
+            {{$index + 1}}
         </div>
         }
     </div>

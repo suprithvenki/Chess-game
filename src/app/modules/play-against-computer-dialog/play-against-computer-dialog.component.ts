@@ -16,22 +16,22 @@ import { Router } from '@angular/router';
   styleUrl: './play-against-computer-dialog.component.css'
 })
 export class PlayAgainstComputerDialogComponent {
-  public stockfishLevels: readonly number[] = [1, 2, 3, 4, 5];
-  public stockfishLevel: number = 1;
+  public stockfishLevels: readonly number[] = [9, 10, 11, 12, 13];
+  public stockfishLevelIndex: number = 0;
 
   private stockfishService: StockfishService = inject(StockfishService);
   private dialog: MatDialog = inject(MatDialog);
   private router: Router = inject(Router);
 
   public selectStockfishLevel(level: number): void {
-    this.stockfishLevel = level;
+    this.stockfishLevelIndex = level;
   }
 
   public play(color: 'w' | 'b'): void {
     this.dialog.closeAll();
     this.stockfishService.computerConfiguration$.next({
       color: color === 'w' ? Color.Black : Color.White,
-      level: this.stockfishLevels[this.stockfishLevel]
+      level: this.stockfishLevels[this.stockfishLevelIndex]
     });
     this.router.navigate(['against-computer']);
   }
