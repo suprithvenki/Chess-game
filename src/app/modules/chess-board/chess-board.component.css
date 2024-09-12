@@ -1,88 +1,110 @@
+/* Chessboard container */
 .chess-board {
-    display: flex;
-    justify-content: center;
-    flex-direction: column-reverse;
-    width: 480px;
-    height: 480px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column-reverse;
+  width: 480px;
+  height: 480px;
 }
 
+/* Rotated board for perspective */
 .rotated {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
+/* Row styling for the chessboard */
 .row {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
+/* Square styling for each chess square */
 .square {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 60px;
-    width: 60px;
-    cursor: pointer;
-    border: 1px solid white;
-    background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  width: 60px;
+  cursor: pointer;
+  border: 1px solid white;
+  background-color: white;
 }
 
-
+/* Game over message styling */
 .game-over-message {
-    color: white;
+  color: white;
 }
 
+/* Promotion dialog box styling */
 .promotion-dialog {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 300px;
-    height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 300px;
+  height: 100px;
 }
 
+/* Images in the promotion dialog */
 .promotion-dialog img {
-    height: 60px;
-    cursor: pointer;
+  height: 60px;
+  cursor: pointer;
 }
 
+/* Close button for the promotion dialog */
 .close-promotion-dialog {
-    font-size: 45px;
-    cursor: pointer;
-    color: white;
+  font-size: 45px;
+  cursor: pointer;
+  color: white;
 }
 
+/* Dark square styling */
 .dark {
-    background-color: #779AAF
+  background-color: #779aaf;
 }
 
+/* Light square styling */
 .light {
-    background-color: #D9E4E8;
+  background-color: #d9e4e8;
 }
 
+/* Piece styling */
 .piece {
-    width: 50px;
+  width: 50px;
 }
 
+/* Selected square highlighting */
 .selected-square {
-    box-shadow: inset rgba(60, 70, 85, 0.5) 0px 0px 40px 0px, inset rgba(60, 70, 85, 0.5) 0px 0px 40px 0px, inset rgba(0, 0, 0, 1) 0px 0px 36px -24px;
+  box-shadow: inset rgba(60, 70, 85, 0.5) 0px 0px 40px,
+    inset rgba(60, 70, 85, 0.5) 0px 0px 40px,
+    inset rgba(0, 0, 0, 1) 0px 0px 36px -24px;
 }
 
+/* Safe square indicator */
 .safe-square {
-    position: absolute;
-    height: 20px;
-    width: 20px;
-    background-color: #bbb;
-    border-radius: 50%;
-    z-index: 100;
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  background-color: #bbb;
+  border-radius: 50%;
+  z-index: 100;
 }
 
+/* King in check highlighting */
 .king-in-check {
-    box-shadow: inset rgb(179, 21, 0) 0px 0px 40px 0px, inset rgb(163, 11, 0) 0px 0px 40px 0px, inset rgba(0, 0, 0, 1) 0px 0px 36px -24px;
+  box-shadow: inset rgb(179, 21, 0) 0px 0px 40px,
+    inset rgb(163, 11, 0) 0px 0px 40px,
+    inset rgba(0, 0, 0, 1) 0px 0px 36px -24px;
 }
 
+/* Last move highlighting */
 .last-move {
-    box-shadow: inset rgb(6, 179, 0) 0px 0px 40px 0px, inset rgb(6, 179, 0)0px 0px 40px 0px, inset rgba(0, 0, 0, 1) 0px 0px 36px -24px;
+  box-shadow: inset rgb(6, 179, 0) 0px 0px 40px,
+    inset rgb(6, 179, 0) 0px 0px 40px, inset rgba(0, 0, 0, 1) 0px 0px 36px -24px;
 }
 
+/* Promotion square styling */
 .promotion-square {
-    box-shadow: inset rgb(0, 98, 150) 0px 0px 40px 0px, inset rgb(0, 98, 150) 0px 0px 40px 0px, inset rgba(0, 0, 0, 1) 0px 0px 36px -24px;
+  box-shadow: inset rgb(0, 98, 150) 0px 0px 40px,
+    inset rgb(0, 98, 150) 0px 0px 40px,
+    inset rgba(0, 0, 0, 1) 0px 0px 36px -24px;
 }

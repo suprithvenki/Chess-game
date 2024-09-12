@@ -27,3 +27,11 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('Hello, Chess-game');
   });
 });
+function beforeEach(arg0: () => Promise<void>) {
+  throw new Error('Function not implemented.');
+}
+
+function expect(app: any) {
+  throw new Error('Function not implemented.');
+}
+
